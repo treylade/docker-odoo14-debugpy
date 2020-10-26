@@ -2,15 +2,15 @@
 
 **The changes I did to this fork:**
 
-- Offer only ODOO 13.0, with latest Nightly-Build version (not automated yet, I bump the Release-ID up manually)
+- Offer only ODOO 14.0, with latest Nightly-Build version (not automated yet, I bump the Release-ID up manually)
 - Add ptvsd to image and implement attach-hook for remote debugging
 
 **Setup:**
 
 ```shell
-docker pull lrstry/odoo13-latest-ptvsd
+docker pull lrstry/odoo14-latest-ptvsd
 docker run -d -p 5432:5432 -e POSTGRES_USER=odoo -e POSTGRES_PASSWORD=odoo -e POSTGRES_DB=postgres --name db postgres:10
-docker run -p 8069:8069 -p 3000:3000 -v /Users/lrstry/Documents/SwaF/custom_swaf:/mnt/extra-addons --name odoo --link db:db -t lrstry/odoo13-latest-ptvsd
+docker run -p 8069:8069 -p 3000:3000 -v /Users/lrstry/Documents/SwaF/custom_swaf:/mnt/extra-addons --name odoo --link db:db -t lrstry/odoo14-latest-ptvsd
 ```
 
 **Debugging with VSCode using following launch.json:**
