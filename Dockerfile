@@ -59,7 +59,7 @@ RUN npm install -g rtlcss
 
 # Install Odoo
 ENV ODOO_VERSION 14.0
-ARG ODOO_RELEASE=20201028
+ARG ODOO_RELEASE=20201110
 RUN curl -o odoo.deb -sSL http://nightly.odoo.com/${ODOO_VERSION}/nightly/deb/odoo_${ODOO_VERSION}.${ODOO_RELEASE}_all.deb \
     && apt-get update \
     && apt-get -y install --no-install-recommends ./odoo.deb \
