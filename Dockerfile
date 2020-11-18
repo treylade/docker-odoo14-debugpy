@@ -77,8 +77,8 @@ VOLUME ["/var/lib/odoo", "/mnt/extra-addons"]
 
 # Implement remote-attach hook for debugging
 RUN set -x; \
-        echo "import ptvsd" >> /usr/lib/python3/dist-packages/odoo/addons/__init__.py \
-        && echo "ptvsd.enable_attach(address=('0.0.0.0', 3000))" >> /usr/lib/python3/dist-packages/odoo/addons/__init__.py
+        echo "import ptvsd" >> /usr/lib/python3/dist-packages/odoo/__init__.py \
+        && echo "ptvsd.enable_attach(address=('0.0.0.0', 3000))" >> /usr/lib/python3/dist-packages/odoo/__init__.py
 
 # Expose Odoo services
 EXPOSE 8069 8071 8072
