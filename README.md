@@ -11,8 +11,8 @@ I used non-default port-mappings to prevent collisions with existing containers 
 
 ```shell
 docker pull lrstry/odoo14-latest-ptvsd
-docker run -d -p 5433:5432 -e POSTGRES_USER=odoo -e POSTGRES_PASSWORD=odoo -e POSTGRES_DB=postgres --name odoo14_db postgres:10
-docker run -p 8070:8069 -p 3001:3000 -v /path/to/local/extra-addons:/mnt/extra-addons --name odoo14 --link odoo14_db:db -t lrstry/odoo14-latest-ptvsd
+docker run -d -p 5433:5432 -e POSTGRES_USER=odoo -e POSTGRES_PASSWORD=odoo -e POSTGRES_DB=postgres --name db postgres:10
+docker run -p 8070:8069 -p 3001:3000 -v /path/to/local/extra-addons:/mnt/extra-addons --name odoo --link odoo14_db:db -t lrstry/odoo14-latest-ptvsd
 ```
 
 **Debugging with VSCode using following launch.json:**
