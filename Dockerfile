@@ -96,6 +96,8 @@ COPY wait-for-psql.py /usr/local/bin/wait-for-psql.py
 
 # Set default user when running the container
 USER odoo
+RUN usermod -u 1000 odoo
+RUN groupmod -g 1000 odoo
 
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["odoo"]
