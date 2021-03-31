@@ -75,10 +75,6 @@ RUN curl -o odoo.deb -sSL http://nightly.odoo.com/${ODOO_VERSION}/nightly/deb/od
 COPY ./entrypoint.sh /
 COPY ./odoo.conf /etc/odoo/
 
-# Set permissions and Mount /var/lib/odoo to allow restoring filestore and /mnt/extra-addons for users addons
-RUN chown odoo /etc/odoo/odoo.conf \
-    && mkdir -p /mnt/extra-addons \
-    && chown -R odoo /mnt/extra-addons
 VOLUME ["/var/lib/odoo", "/mnt/extra-addons"]
 
 # Implement remote-attach hook for debugging
@@ -95,9 +91,13 @@ ENV ODOO_RC /etc/odoo/odoo.conf
 COPY wait-for-psql.py /usr/local/bin/wait-for-psql.py
 
 # Set default user when running the container
+RUN sudo usermod -u 1000 odoo
+RUN sudo groupmod -g 1000 odoo
+# Set permissions and Mount /var/lib/odoo to allow restoring filestore and /mnt/extra-addons for users addons
+RUN sudo chown odoo /etc/odoo/odoo.conf \
+    && sudo mkdir -p /mnt/extra-addons \
+    && sudo chown -R odoo /mnt/extra-addons
 USER odoo
-RUN usermod -u 1000 odoo
-RUN groupmod -g 1000 odoo
 
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["odoo"]
