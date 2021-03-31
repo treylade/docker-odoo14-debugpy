@@ -97,6 +97,7 @@ RUN groupmod -g 1000 odoo
 RUN chown odoo /etc/odoo/odoo.conf \
     && mkdir -p /mnt/extra-addons \
     && chown -R odoo /mnt/extra-addons
+
 USER odoo
 
 ENTRYPOINT ["/entrypoint.sh"]
