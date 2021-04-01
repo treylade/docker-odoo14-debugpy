@@ -90,14 +90,14 @@ ENV ODOO_RC /etc/odoo/odoo.conf
 
 COPY wait-for-psql.py /usr/local/bin/wait-for-psql.py
 
-# Set default user when running the container
-RUN usermod -u 1000 odoo
-RUN groupmod -g 1000 odoo
-# Set permissions and Mount /var/lib/odoo to allow restoring filestore and /mnt/extra-addons for users addons
-RUN chown odoo:odoo /etc/odoo/odoo.conf \
-    && mkdir -p /mnt/extra-addons \
-    && chown -R odoo:odoo /mnt/extra-addons \
-    && chown -R odoo:odoo /var/lib/odoo/
+# # Set default user when running the container
+# RUN usermod -u 1000 odoo
+# RUN groupmod -g 1000 odoo
+# # Set permissions and Mount /var/lib/odoo to allow restoring filestore and /mnt/extra-addons for users addons
+# RUN chown odoo:odoo /etc/odoo/odoo.conf \
+#     && mkdir -p /mnt/extra-addons \
+#     && chown -R odoo:odoo /mnt/extra-addons \
+#     && chown -R odoo:odoo /var/lib/odoo/
 
 USER odoo
 
