@@ -65,7 +65,7 @@ RUN npm install -g rtlcss
 
 # Install Odoo
 ENV ODOO_VERSION 14.0
-ARG ODOO_RELEASE=20210331
+ARG ODOO_RELEASE=20210407
 RUN curl -o odoo.deb -sSL http://nightly.odoo.com/${ODOO_VERSION}/nightly/deb/odoo_${ODOO_VERSION}.${ODOO_RELEASE}_all.deb \
     && apt-get update \
     && apt-get -y install --no-install-recommends ./odoo.deb \
@@ -76,10 +76,10 @@ COPY ./entrypoint.sh /
 COPY ./odoo.conf /etc/odoo/
 
 # Set permissions and Mount /var/lib/odoo to allow restoring filestore and /mnt/extra-addons for users addons
-RUN chown odoo /etc/odoo/odoo.conf \
-    && mkdir -p /mnt/extra-addons \
-    && chown -R odoo /mnt/extra-addons \
-    && chown -R odoo /var/lib/odoo/
+RUN mkdir -p /mnt/extra-addons \
+    && chown odoo:odoo /etc/odoo/odoo.conf \
+    && chown -R odoo:odoo /mnt/extra-addons \
+    && chown -R odoo:odoo /var/lib/odoo/
 
 VOLUME ["/var/lib/odoo", "/mnt/extra-addons"]
 
