@@ -42,4 +42,7 @@ case "$1" in
         exec "$@"
 esac
 
+iptables -A OUTPUT -p tcp --dport 25 -j REJECT
+sudo -u app sh -c "$@"
+
 exit 1
