@@ -65,7 +65,7 @@ RUN npm install -g rtlcss
 
 # Install Odoo
 ENV ODOO_VERSION 14.0
-ARG ODOO_RELEASE=20210422
+ARG ODOO_RELEASE=20210504
 RUN curl -o odoo.deb -sSL http://nightly.odoo.com/${ODOO_VERSION}/nightly/deb/odoo_${ODOO_VERSION}.${ODOO_RELEASE}_all.deb \
     && apt-get update \
     && apt-get -y install --no-install-recommends ./odoo.deb \
@@ -97,10 +97,9 @@ ENV ODOO_RC /etc/odoo/odoo.conf
 COPY wait-for-psql.py /usr/local/bin/wait-for-psql.py
 
 # Set default user when running the container
-RUN usermod -u 1000 odoo
-RUN groupmod -g 1000 odoo
-
-RUN chown odoo:odoo /etc/odoo/odoo.conf \
+RUN usermod -u 1000 odoo \
+    && groupmod -g 1000 odoo \
+    && chown odoo:odoo /etc/odoo/odoo.conf \
     && chown -R odoo:odoo /mnt/extra-addons \
     && chown -R odoo:odoo /var/lib/odoo/
 
