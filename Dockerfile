@@ -44,7 +44,8 @@ RUN set -x; \
 RUN set -x; \
         pip3 install wheel \
         && pip3 install py3dns \
-        && pip3 install validate_email
+        && pip3 install validate_email \
+        && pip3 install regex
 
 # install latest postgresql-client
 RUN echo 'deb http://apt.postgresql.org/pub/repos/apt/ buster-pgdg main' > /etc/apt/sources.list.d/pgdg.list \
@@ -65,7 +66,7 @@ RUN npm install -g rtlcss
 
 # Install Odoo
 ENV ODOO_VERSION 14.0
-ARG ODOO_RELEASE=20210908
+ARG ODOO_RELEASE=20210924
 RUN curl -o odoo.deb -sSL http://nightly.odoo.com/${ODOO_VERSION}/nightly/deb/odoo_${ODOO_VERSION}.${ODOO_RELEASE}_all.deb \
     && apt-get update \
     && apt-get -y install --no-install-recommends ./odoo.deb \
