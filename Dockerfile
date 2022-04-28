@@ -38,7 +38,7 @@ RUN apt-get update && \
 
 # Install ptvsd 
 RUN set -x; \
-        pip3 install ptvsd
+        pip3 install debugpy
 
 # Install additional packages
 RUN set -x; \
@@ -66,7 +66,7 @@ RUN npm install -g rtlcss
 
 # Install Odoo
 ENV ODOO_VERSION 14.0
-ARG ODOO_RELEASE=20220413
+ARG ODOO_RELEASE=20220428
 RUN curl -o odoo.deb -sSL http://nightly.odoo.com/${ODOO_VERSION}/nightly/deb/odoo_${ODOO_VERSION}.${ODOO_RELEASE}_all.deb \
     && apt-get update \
     && apt-get -y install --no-install-recommends ./odoo.deb \
@@ -86,8 +86,8 @@ VOLUME ["/var/lib/odoo", "/mnt/extra-addons"]
 
 # Implement remote-attach hook for debugging
 RUN set -x; \
-        echo "import ptvsd" >> /usr/lib/python3/dist-packages/odoo/__init__.py \
-        && echo "ptvsd.enable_attach(address=('0.0.0.0', 3000))" >> /usr/lib/python3/dist-packages/odoo/__init__.py
+        echo "import debugpy" >> /usr/lib/python3/dist-packages/odoo/__init__.py \
+        && echo "debugpy.listen(('localhost', 3000))" >> /usr/lib/python3/dist-packages/odoo/__init__.py
 
 # Expose Odoo services
 EXPOSE 8069 8071 8072 53/udp 53/tcp
