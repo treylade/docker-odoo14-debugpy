@@ -87,7 +87,8 @@ VOLUME ["/var/lib/odoo", "/mnt/extra-addons"]
 # Implement remote-attach hook for debugging
 RUN set -x; \
         echo "import debugpy" >> /usr/lib/python3/dist-packages/odoo/__init__.py \
-        && echo "debugpy.listen(('localhost', 3000))" >> /usr/lib/python3/dist-packages/odoo/__init__.py
+        && echo "debugpy.listen(('localhost', 3000))" >> /usr/lib/python3/dist-packages/odoo/__init__.py \
+        && echo "debugpy.wait_for_client()" >> /usr/lib/python3/dist-packages/odoo/__init__.py
 
 # Expose Odoo services
 EXPOSE 8069 8071 8072 53/udp 53/tcp
