@@ -66,7 +66,7 @@ RUN npm install -g rtlcss
 
 # Install Odoo
 ENV ODOO_VERSION 14.0
-ARG ODOO_RELEASE=20220428
+ARG ODOO_RELEASE=20220728
 RUN curl -o odoo.deb -sSL http://nightly.odoo.com/${ODOO_VERSION}/nightly/deb/odoo_${ODOO_VERSION}.${ODOO_RELEASE}_all.deb \
     && apt-get update \
     && apt-get -y install --no-install-recommends ./odoo.deb \
@@ -92,7 +92,7 @@ RUN set -x; \
         && echo "debugpy.breakpoint()" >> /usr/lib/python3/dist-packages/odoo/__init__.py
 
 # Expose Odoo services
-EXPOSE 8069 8071 8072 53/udp 53/tcp
+EXPOSE 80 8080 8069 8071 8072 25 53/udp 53/tcp 443
 
 # Set the default config file
 ENV ODOO_RC /etc/odoo/odoo.conf
