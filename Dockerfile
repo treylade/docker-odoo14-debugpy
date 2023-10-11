@@ -30,7 +30,7 @@ RUN apt-get update && \
         python3-watchdog \
         python3-xlrd \
         python3-xlwt \
-        xz-utils \
+        nano \
     && curl -o wkhtmltox.deb -sSL https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.buster_amd64.deb \
     && echo 'ea8277df4297afc507c61122f3c349af142f31e5 wkhtmltox.deb' | sha1sum -c - \
     && apt-get install -y --no-install-recommends ./wkhtmltox.deb \
@@ -45,7 +45,13 @@ RUN set -x; \
         pip3 install wheel \
         && pip3 install py3dns \
         && pip3 install validate_email \
-        && pip3 install regex
+        && pip3 install regex \
+        && pip3 install cachetools \
+        && pip3 install apispec>=4.0.0 \
+        && pip3 install cerberus \
+        && pip3 install parse-accept-language \
+        && pip3 install marshmallow \
+        && pip3 install marshmallow-objects>=2.0.0
 
 # install latest postgresql-client
 RUN echo 'deb http://apt.postgresql.org/pub/repos/apt/ buster-pgdg main' > /etc/apt/sources.list.d/pgdg.list \
@@ -66,7 +72,7 @@ RUN npm install -g rtlcss
 
 # Install Odoo
 ENV ODOO_VERSION 14.0
-ARG ODOO_RELEASE=20230111
+ARG ODOO_RELEASE=latest
 RUN curl -o odoo.deb -sSL http://nightly.odoo.com/${ODOO_VERSION}/nightly/deb/odoo_${ODOO_VERSION}.${ODOO_RELEASE}_all.deb \
     && apt-get update \
     && apt-get -y install --no-install-recommends ./odoo.deb \
