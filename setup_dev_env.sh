@@ -10,7 +10,7 @@ docker rm -v odoo db
 docker buildx build --platform linux/amd64 -t odoo ~/Git/docker-odoo14-debugpy
 
 # Run the postgres container
-docker run -d -p 5432:5432 -e POSTGRES_USER=odoo -e PUID=1000 -e PGID=1000 -e POSTGRES_PASSWORD=odoo -e POSTGRES_DB=postgres --name db postgres:10
+docker run -d -p 5432:5432 -e POSTGRES_USER=odoo -e PUID=1000 -e PGID=1000 -e POSTGRES_PASSWORD=odoo -e POSTGRES_DB=postgres --name db postgres:14
 
 # Give it a moment to ensure the database is up
 sleep 10
