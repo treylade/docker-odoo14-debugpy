@@ -1,60 +1,84 @@
-FROM debian:buster-slim
-MAINTAINER Odoo S.A. <info@odoo.com>
+FROM debian:bullseye
 
 SHELL ["/bin/bash", "-xo", "pipefail", "-c"]
 
 # Generate locale C.UTF-8 for postgres and general locale data
 ENV LANG C.UTF-8
 
-# Install some deps, lessc and less-plugin-clean-css, and wkhtmltopdf
+# Retrieve the target architecture to install the correct wkhtmltopdf package
+ARG TARGETARCH
+
+# Install dependencies
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
+        build-essential \
         ca-certificates \
         curl \
         dirmngr \
         fonts-noto-cjk \
         gnupg \
+        libatlas-base-dev \
+        libblas-dev \
+        libbz2-dev \
+        libffi-dev \
+        libgdbm-dev \
+        libjpeg-dev \
+        liblcms2-dev \
+        libldap2-dev \
+        libncurses5-dev \
+        libnss3-dev \
+        libpq-dev \
+        libreadline-dev \
+        libsasl2-dev \
+        libsqlite3-dev \
         libssl-dev \
+        libxml2-dev \
+        libxslt1-dev \
         node-less \
         npm \
-        python3-num2words \
-        python3-pdfminer \
-        python3-pip \
-        python3-phonenumbers \
-        python3-pyldap \
-        python3-qrcode \
-        python3-renderpm \
-        python3-setuptools \
-        python3-slugify \
-        python3-vobject \
-        python3-watchdog \
-        python3-xlrd \
-        python3-xlwt \
-        nano \
-    && curl -o wkhtmltox.deb -sSL https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.buster_amd64.deb \
-    && echo 'ea8277df4297afc507c61122f3c349af142f31e5 wkhtmltox.deb' | sha1sum -c - \
+        wget \
+        xz-utils \
+        zlib1g-dev \
+        lsb-release \
+        libffi-dev \
+        uuid-dev \
+        libgdbm-dev \
+        tk-dev \
+        libdb-dev
+
+# Install Python 3.10
+RUN curl -O https://www.python.org/ftp/python/3.10.12/Python-3.10.12.tgz && \
+    tar -xzf Python-3.10.12.tgz && \
+    cd Python-3.10.12 && \
+    ./configure --enable-optimizations && \
+    make -j$(nproc) && \
+    make altinstall && \
+    cd .. && \
+    rm -rf Python-3.10.12 Python-3.10.12.tgz
+
+# Remove existing python3 link if it exists and set Python 3.10 as the default python3
+RUN rm -f /usr/bin/python3 && ln -s /usr/local/bin/python3.10 /usr/bin/python3
+
+# Install pip
+RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python3.10
+
+# Retrieve the target architecture to install the correct wkhtmltopdf package
+RUN if [ -z "${TARGETARCH}" ]; then \
+        TARGETARCH="$(dpkg --print-architecture)"; \
+    fi; \
+    WKHTMLTOPDF_ARCH=${TARGETARCH} && \
+    case ${TARGETARCH} in \
+    "amd64") WKHTMLTOPDF_ARCH=amd64 && WKHTMLTOPDF_SHA=9df8dd7b1e99782f1cfa19aca665969bbd9cc159  ;; \
+    "arm64")  WKHTMLTOPDF_SHA=58c84db46b11ba0e14abb77a32324b1c257f1f22  ;; \
+    "ppc64le" | "ppc64el") WKHTMLTOPDF_ARCH=ppc64el && WKHTMLTOPDF_SHA=7ed8f6dcedf5345a3dd4eeb58dc89704d862f9cd  ;; \
+    esac \
+    && curl -o wkhtmltox.deb -sSL https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-3/wkhtmltox_0.12.6.1-3.bullseye_${WKHTMLTOPDF_ARCH}.deb \
+    && echo ${WKHTMLTOPDF_SHA} wkhtmltox.deb | sha1sum -c - \
     && apt-get install -y --no-install-recommends ./wkhtmltox.deb \
     && rm -rf /var/lib/apt/lists/* wkhtmltox.deb
 
-# Install ptvsd 
-RUN set -x; \
-        pip3 install debugpy
-
-# Install additional packages
-RUN set -x; \
-        pip3 install wheel \
-        && pip3 install py3dns \
-        && pip3 install validate_email \
-        && pip3 install regex \
-        && pip3 install cachetools \
-        && pip3 install apispec>=4.0.0 \
-        && pip3 install cerberus \
-        && pip3 install parse-accept-language \
-        && pip3 install marshmallow \
-        && pip3 install marshmallow-objects>=2.0.0
-
-# install latest postgresql-client
-RUN echo 'deb http://apt.postgresql.org/pub/repos/apt/ buster-pgdg main' > /etc/apt/sources.list.d/pgdg.list \
+# Install latest postgresql-client
+RUN echo 'deb http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main' > /etc/apt/sources.list.d/pgdg.list \
     && GNUPGHOME="$(mktemp -d)" \
     && export GNUPGHOME \
     && repokey='B97B0AFCAA1A47F044F244A07FCC7D46ACCC4CF8' \
@@ -67,35 +91,43 @@ RUN echo 'deb http://apt.postgresql.org/pub/repos/apt/ buster-pgdg main' > /etc/
     && rm -f /etc/apt/sources.list.d/pgdg.list \
     && rm -rf /var/lib/apt/lists/*
 
-# Install rtlcss (on Debian buster)
-RUN npm install -g rtlcss
+# Install node packages
+RUN npm install -g rtlcss less less-plugin-clean-css
+
+# Create and activate a virtual environment
+RUN python3.10 -m venv /opt/odoo-venv
+ENV PATH="/opt/odoo-venv/bin:$PATH"
+
+# Install Odoo requirements and additional packages within the virtual environment
+RUN pip install wheel debugpy py3dns validate_email regex jingtrang unidecode fastapi python-multipart ujson a2wsgi parse-accept-language pyjwt
+RUN pip install -r https://raw.githubusercontent.com/odoo/odoo/16.0/requirements.txt
 
 # Install Odoo
-ENV ODOO_VERSION 14.0
+ENV ODOO_VERSION 16.0
 ARG ODOO_RELEASE=latest
-RUN curl -o odoo.deb -sSL http://nightly.odoo.com/${ODOO_VERSION}/nightly/deb/odoo_${ODOO_VERSION}.${ODOO_RELEASE}_all.deb \
-    && apt-get update \
-    && apt-get -y install --no-install-recommends ./odoo.deb \
-    && rm -rf /var/lib/apt/lists/* odoo.deb
+RUN curl -o odoo.deb -sSL http://nightly.odoo.com/${ODOO_VERSION}/nightly/deb/odoo_${ODOO_VERSION}.${ODOO_RELEASE}_all.deb && \
+    apt-get update && \
+    apt-get -y install --no-install-recommends ./odoo.deb && \
+    rm -rf /var/lib/apt/lists/* odoo.deb
 
 # Copy entrypoint script and Odoo configuration file
 COPY ./entrypoint.sh /
 COPY ./odoo.conf /etc/odoo/
 
-# Set permissions and Mount /var/lib/odoo to allow restoring filestore and /mnt/extra-addons for users addons
-RUN mkdir -p /mnt/extra-addons \
-    && chown odoo:odoo /etc/odoo/odoo.conf \
-    && chown -R odoo:odoo /mnt/extra-addons \
-    && chown -R odoo:odoo /var/lib/odoo/
+# Set permissions and mount /var/lib/odoo to allow restoring filestore and /mnt/extra-addons for user addons
+RUN mkdir -p /mnt/extra-addons && \
+    chown odoo:odoo /etc/odoo/odoo.conf && \
+    chown -R odoo:odoo /mnt/extra-addons && \
+    chown -R odoo:odoo /var/lib/odoo/
 
 VOLUME ["/var/lib/odoo", "/mnt/extra-addons"]
 
 # Implement remote-attach hook for debugging
 RUN set -x; \
-        echo "import debugpy" >> /usr/lib/python3/dist-packages/odoo/__init__.py \
-        && echo "debugpy.listen(('0.0.0.0', 3000))" >> /usr/lib/python3/dist-packages/odoo/__init__.py \
-        && echo "debugpy.wait_for_client()" >> /usr/lib/python3/dist-packages/odoo/__init__.py \
-        && echo "debugpy.breakpoint()" >> /usr/lib/python3/dist-packages/odoo/__init__.py
+    echo "import debugpy" >> /usr/lib/python3/dist-packages/odoo/__init__.py && \
+    echo "debugpy.listen(('0.0.0.0', 3000))" >> /usr/lib/python3/dist-packages/odoo/__init__.py && \
+    echo "debugpy.wait_for_client()" >> /usr/lib/python3/dist-packages/odoo/__init__.py && \
+    echo "debugpy.breakpoint()" >> /usr/lib/python3/dist-packages/odoo/__init__.py
 
 # Expose Odoo services
 EXPOSE 80 8080 8069 8071 8072 25 53/udp 53/tcp 443
@@ -106,11 +138,14 @@ ENV ODOO_RC /etc/odoo/odoo.conf
 COPY wait-for-psql.py /usr/local/bin/wait-for-psql.py
 
 # Set default user when running the container
-RUN usermod -u 1000 odoo \
-    && groupmod -g 1000 odoo \
-    && chown odoo:odoo /etc/odoo/odoo.conf \
-    && chown -R odoo:odoo /mnt/extra-addons \
-    && chown -R odoo:odoo /var/lib/odoo/
+RUN usermod -u 1000 odoo && \
+    groupmod -g 1000 odoo && \
+    chown odoo:odoo /etc/odoo/odoo.conf && \
+    chown -R odoo:odoo /mnt/extra-addons && \
+    chown -R odoo:odoo /var/lib/odoo/
+
+# Add the virtual environment to the PYTHONPATH
+ENV PYTHONPATH="/opt/odoo-venv/lib/python3.10/site-packages:/usr/lib/python3/dist-packages"
 
 USER odoo
 
